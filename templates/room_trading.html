@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% block title %}Trading — Panel dowodzenia{% endblock %}
+{% block heading %}&#128200; Pok&#243;j: Trading{% endblock %}
+{% block crumb %}Sygna&#322;y z grupy TG &middot; analiza &middot; WIRTUALNY portfel (paper trading){% endblock %}
+
+{% block content %}
+
+  <div class="note">
+    <b>Zero prawdziwych transakcji.</b> Ka&#380;dy sygna&#322; dostaje wirtualne $100 &mdash;
+    mierzymy, czy sygna&#322;y grupy w og&#243;le zarabiaj&#261;. Realne kupno rozwa&#380;ymy dopiero
+    przy dobrych statystykach.
+  </div>
+
+  <div class="sect"><span>Czytnik grupy</span></div>
+  <div class="card">
+    {% if reader_on %}
+      <span class="pill ok"><span class="d"></span>Pod&#322;&#261;czony: {{ group_name }}</span>
+      <div class="small dim" style="margin-top:8px;">Ka&#380;dy token z grupy jest automatycznie analizowany.</div>
+    {% else %}
+      <span class="pill stop"><span class="d"></span>Niepod&#322;&#261;czony</span>
+      <div class="muted small" style="margin-top:12px;line-height:1.8;">
+        Podepnij swoje konto TG (czyta TYLKO wskazan&#261; grup&#281;):<br>
+        <b>1)</b> Wejd&#378; na <b>my.telegram.org</b> &rarr; API development tools &rarr; utw&#243;rz aplikacj&#281;
+        &rarr; przepisz <b>api_id</b> i <b>api_hash</b><br>
+        <b>2)</b> W PowerShell: <code style="color:#9cc0ff;">cd panel; python connect_trading.py</code><br>
+        <b>3)</b> Podaj numer, kod z Telegrama i wybierz grup&#281; z listy. Gotowe.
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="sect"><span>Test r&#281;czny (wklej wiadomo&#347;&#263; z sygna&#322;em)</span></div>
+  <div class="card">
+    <form action="/trading/test" method="post" style="display:flex;gap:10px;flex-wrap:wrap;">
+      <input name="text" placeholder="np.: kupujcie $BONK albo adres kontraktu..."
+        style="flex:1;min-width:280px;background:#0a0e17;border:1px solid var(--border2);border-radius:8px;color:var(--text);padding:9px 12px;font:inherit;">
+      <button class="btn primary sm">Analizuj</button>
+    </form>
+    <div class="small dim" style="margin-top:8px;">Dzia&#322;a jak prawdziwy sygna&#322;: analiza + wpis do portfela + alert na TG.</div>
+  </div>
+
+  <div class="sect"><span>Wirtualny portfel &mdash; skuteczno&#347;&#263; sygna&#322;&#243;w</span></div>
+  <div class="card">
+    <div class="stats">
+      <div class="stat"><div class="n">${{ pf.total_in }}</div><div class="l">w&#322;o&#380;one (wirtualnie)</div></div>
+      <div class="stat"><div class="n">${{ pf.total_now }}</div><div class="l">warto&#347;&#263; teraz</div></div>
+      <div class="stat"><div class="n" style="color:{{ '#6fe3a5' if pf.total_pnl_pct >= 0 else '#ff8b96' }}">{{ pf.total_pnl_pct }}%</div><div class="l">wynik</div></div>
+      <div class="stat"><div class="n">{{ pf.rows|length }}</div><div class="l">sygna&#322;y</div></div>
+    </div>
+  </div>
+
+  <div class="sect"><span>Wnioski z danych (fundament decyzji kiedy kupowa&#263;)</span></div>
+  <div class="card">
+    {% if insights and insights.count %}
+    <div class="stats">
+      <div class="stat"><div class="n">{{ insights.count }}</div><div class="l">tokeny &#347;ledzone</div></div>
+      <div class="stat"><div class="n" style="color:#ff8b96;">{{ insights.rug_pct }}%</div><div class="l">rugpulle</div></div>
+      <div class="stat"><div class="n" style="color:#6fe3a5;">{{ insights.winners_pct }}%</div><div class="l">da&#322;o &ge;+30%</div></div>
+      <div class="stat"><div class="n">{{ insights.med_minutes_to_peak or '?' }}</div><div class="l">min do szczytu (mediana)</div></div>
+      <div class="stat"><div class="n" style="color:#6fe3a5;">+{{ insights.med_gain_to_peak_pct or 0 }}%</div><div class="l">do szczytu (mediana)</div></div>
+    </div>
+    <div class="note" style="margin-top:14px;">
+      Regu&#322;a wej&#347;cia/wyj&#347;cia policzymy z tych liczb, gdy uzbiera si&#281; pr&#243;bka
+      (min. ~30 token&#243;w). Na razie <b>zbieramy dane</b> &mdash; zero prawdziwych transakcji.
+    </div>
+    {% else %}
+    <div class="muted">Zbieram dane... pierwsze wnioski pojawi&#261; si&#281; po kilku wykrytych tokenach.</div>
+    {% endif %}
+  </div>
+
+  {% if standings %}
+  <div class="sect">
+    <span>&#9876; Pojedynek strategii (na &#380;ywo, paper)</span>
+    <span class="small dim">ka&#380;dy sygna&#322; = $100 w ka&#380;dej &middot; kt&#243;ra zarabia?</span>
+  </div>
+  <div class="list">
+    {% for s in standings %}
+    <div class="row">
+      <div class="row-h">
+        {% if loop.first and s.closed %}
+          <span style="width:230px;color:#6fe3a5;font-weight:700;">&#129351; {{ s.name }}</span>
+        {% else %}
+          <span style="width:230px;">{{ s.name }}</span>
+        {% endif %}
+        <span style="font-weight:800;font-size:15px;color:{{ '#6fe3a5' if s.pnl_pct >= 0 else '#ff8b96' }};">
+          {{ '%+.1f'|format(s.pnl_pct) }}%
+        </span>
+        <span class="small dim">&nbsp;${{ s['in'] }} &rarr; ${{ s.val }}</span>
+        <span class="small dim">&middot; zamkni&#281;te: {{ s.closed }} &middot; otwarte: {{ s.open }}
+          {% if s.winrate is not none %}&middot; trafność: {{ s.winrate }}%{% endif %}
+          {% if s.note %}&middot; {{ s.note }}{% endif %}</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="note" style="margin-top:12px;">
+    Trzy strategie grają r&#243;wnolegle na ka&#380;dym nowym sygnale. &bdquo;Adaptacyjna&rdquo;
+    uczy si&#281; &mdash; sprzedaje po tylu minutach, ile aktualnie wychodzi najlepiej z danych.
+    To test W PRZ&#211;D: wygrany po ~kilku dniach = kandydat do prawdziwych pieni&#281;dzy.
+  </div>
+  {% endif %}
+
+  {% if exits and exits.count %}
+  <div class="sect">
+    <span>Kiedy sprzeda&#263;? &mdash; symulacja strategii wyj&#347;cia (wstecz)</span>
+    <span class="small dim">{{ exits.count }} token&#243;w &middot; \$100 na ka&#380;dy</span>
+  </div>
+  <div class="list">
+    {% for s in exits.strategies %}
+    <div class="row">
+      <div class="row-h">
+        {% if s.name.startswith('IDEAL') %}
+          <span style="width:280px;color:var(--dim);">{{ s.name }}</span>
+        {% elif loop.first %}
+          <span style="width:280px;color:#6fe3a5;font-weight:700;">&#9733; {{ s.name }}</span>
+        {% else %}
+          <span style="width:280px;">{{ s.name }}</span>
+        {% endif %}
+        <span style="font-weight:800;font-size:15px;color:{{ '#6fe3a5' if s.avg_pnl_pct >= 0 else '#ff8b96' }};">
+          {{ '%+.1f'|format(s.avg_pnl_pct) }}%
+        </span>
+        <span class="small dim">&nbsp;średni wynik/token</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="note" style="margin-top:12px;">
+    &#9733; = najlepsza <b>realna</b> reguła sprzedaży z dotychczasowych danych.
+    &bdquo;IDEAL&rdquo; to teoretyczny szczyt (nieosiągalny w 100%), pokazuje sufit możliwości.
+    Im więcej danych, tym pewniejsza reguła.
+  </div>
+  {% endif %}
+
+  <div class="sect">
+    <span>Wykryte tokeny</span>
+    <span class="small dim">{{ tracked|length }} pod obserwacj&#261; &middot; szczyt = najlepszy moment sprzeda&#380;y</span>
+  </div>
+  <div class="list">
+    {% if not tracked %}
+      <div class="empty">Jeszcze nic nie wykryto. Radar skanuje co 3 min.</div>
+    {% endif %}
+    <div class="row" style="background:rgba(255,255,255,.02);">
+      <div class="row-h small dim" style="font-weight:700;letter-spacing:.03em;">
+        <span style="width:88px;">CZAS</span>
+        <span style="width:96px;">TOKEN</span>
+        <span style="width:70px;">RYZYKO</span>
+        <span style="width:120px;">SZCZYT</span>
+        <span style="width:80px;">TERAZ</span>
+        <span style="width:90px;">STATUS</span>
+        <span>&#377;R&#211;D&#321;O</span>
+      </div>
+    </div>
+    {% for t in tracked %}
+    <div class="row">
+      <div class="row-h">
+        <span class="t" style="width:88px;">{{ t.found_time[11:16] }} &middot; {{ t.found_time[5:10] }}</span>
+        <b style="width:96px;">${{ t.symbol[:12] }}</b>
+        <span style="width:70px;">
+          {% if t.rug %}<span class="tag warn">RUG</span>
+          {% elif t.risk == 'WYSOKIE' %}<span class="tag warn">wysokie</span>
+          {% elif t.risk == 'SREDNIE' %}<span style="color:var(--amber);font-size:11px;">&#347;rednie</span>
+          {% else %}<span style="color:#6fe3a5;font-size:11px;">niskie</span>{% endif %}
+        </span>
+        {% if t.glitch %}
+        <span style="width:120px;" class="small" title="Bledny odczyt ceny swiezego tokena - wykluczony ze statystyk">&#9888; dane niepewne</span>
+        <span style="width:80px;" class="small dim">&mdash;</span>
+        {% else %}
+        <span style="width:120px;">
+          {% if t.gain_to_peak_pct > 0 %}
+            <b style="color:#6fe3a5;">+{{ t.gain_to_peak_pct }}%</b>
+            <span class="small dim">po {{ t.peak_at_min }} min</span>
+          {% else %}<span class="dim">&mdash;</span>{% endif %}
+        </span>
+        <span style="width:80px;font-weight:700;color:{{ '#6fe3a5' if t.now_from_entry_pct >= 0 else '#ff8b96' }};">
+          {{ '%+.1f'|format(t.now_from_entry_pct) }}%
+        </span>
+        {% endif %}
+        <span style="width:90px;">
+          {% if t.rug %}<span style="color:#ff8b96;">RUGPULL</span>
+          {% elif t.status == 'rosnie' %}<span style="color:#6fe3a5;">&#9650; ro&#347;nie</span>
+          {% elif t.status == 'szczyt' %}<span style="color:var(--amber);">&#9679; szczyt</span>
+          {% elif t.status == 'spadek' %}<span style="color:#ff8b96;">&#9660; spadek</span>
+          {% else %}<span class="dim">{{ t.status }}</span>{% endif %}
+        </span>
+        <span class="small dim">{{ t.source }}</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="sect"><span>Raporty z tego pokoju</span></div>
+  {% include "_reports.html" %}
+
+{% endblock %}

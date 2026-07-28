@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Panel dowodzenia{% endblock %}</title>
+<style>
+  :root {
+    --bg: #0b0f17; --side: #0d1320; --card: #121a2b; --card2: #0f1626;
+    --border: #1e293e; --border2: #2a3a58;
+    --text: #e8eef7; --muted: #7d8ba1; --dim: #55627a;
+    --blue: #4f8cff; --green: #2fd47a; --red: #ff4d5e; --amber: #ffb224;
+    --violet: #b07bff;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--bg); color: var(--text);
+    font-family: "Segoe UI", Inter, -apple-system, Roboto, sans-serif; font-size: 15px; }
+  a { color: inherit; text-decoration: none; }
+
+  .app { display: flex; min-height: 100vh; }
+
+  /* ===== SIDEBAR ===== */
+  .side { width: 224px; flex-shrink: 0; background: var(--side);
+    border-right: 1px solid var(--border); padding: 22px 14px;
+    display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+  .logo { font-size: 19px; font-weight: 800; letter-spacing: .02em; padding: 0 10px 22px; }
+  .logo .dot { color: var(--blue); }
+  .logo small { display: block; font-size: 11px; font-weight: 500; color: var(--muted);
+    letter-spacing: .14em; text-transform: uppercase; margin-top: 3px; }
+  .nav-label { font-size: 10.5px; letter-spacing: .16em; color: var(--dim);
+    text-transform: uppercase; padding: 16px 10px 8px; }
+  .nav a { display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    border-radius: 10px; color: var(--muted); font-weight: 500; margin-bottom: 2px;
+    border: 1px solid transparent; transition: all .15s; }
+  .nav a:hover { color: var(--text); background: rgba(79,140,255,.08); }
+  .nav a.on { color: var(--text); background: rgba(79,140,255,.14);
+    border-color: rgba(79,140,255,.35); }
+  .nav a .em { font-size: 17px; width: 22px; text-align: center; }
+  .nav a .soon { margin-left: auto; font-size: 9.5px; color: var(--dim);
+    border: 1px solid var(--border); padding: 2px 6px; border-radius: 5px;
+    letter-spacing: .08em; text-transform: uppercase; }
+  .side-foot { margin-top: auto; padding: 12px 10px 0; font-size: 11.5px; color: var(--dim);
+    border-top: 1px solid var(--border); }
+  .side-foot b { color: var(--muted); }
+
+  /* ===== MAIN ===== */
+  main { flex: 1; min-width: 0; padding: 22px 30px 70px; max-width: 1220px; }
+
+  .top { display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap; padding-bottom: 20px; margin-bottom: 24px;
+    border-bottom: 1px solid var(--border); }
+  .top h1 { font-size: 21px; font-weight: 700; }
+  .top .crumb { color: var(--muted); font-size: 12.5px; margin-top: 3px; }
+  .controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+  /* segmented SET-UP / LIVE */
+  .seg { display: flex; background: var(--card2); border: 1px solid var(--border2);
+    border-radius: 11px; padding: 3px; }
+  .seg button { font: inherit; font-size: 12.5px; font-weight: 700; letter-spacing: .05em;
+    padding: 7px 16px; border: none; border-radius: 8px; background: transparent;
+    color: var(--muted); cursor: pointer; }
+  .seg button.on-setup { background: rgba(79,140,255,.22); color: #9cc0ff; }
+  .seg button.on-live { background: rgba(255,77,94,.22); color: #ff8b96;
+    box-shadow: 0 0 14px rgba(255,77,94,.25); }
+
+  button { font: inherit; cursor: pointer; }
+  .btn { padding: 8px 15px; border-radius: 10px; border: 1px solid var(--border2);
+    background: var(--card); color: var(--text); font-size: 13.5px; font-weight: 600;
+    transition: all .15s; }
+  .btn:hover { border-color: var(--blue); }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .btn.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .btn.primary:hover { filter: brightness(1.12); }
+  .btn.danger { background: rgba(255,77,94,.15); border-color: rgba(255,77,94,.5); color: #ff8b96; }
+  .btn.danger:hover { background: rgba(255,77,94,.28); }
+  .btn.good { background: rgba(47,212,122,.13); border-color: rgba(47,212,122,.45); color: #6fe3a5; }
+  .btn.ghost { background: transparent; }
+  .btn.sm { padding: 6px 12px; font-size: 12.5px; }
+  form.inline { display: inline; }
+
+  .pill { display: inline-flex; align-items: center; gap: 7px; font-size: 12px;
+    font-weight: 600; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border2);
+    color: var(--muted); }
+  .pill .d { width: 8px; height: 8px; border-radius: 50%; }
+  .pill.ok { border-color: rgba(47,212,122,.5); color: #6fe3a5; } .pill.ok .d { background: var(--green); }
+  .pill.stop { border-color: rgba(255,77,94,.5); color: #ff8b96; } .pill.stop .d { background: var(--red); }
+  .pill.auto { border-color: rgba(255,178,36,.5); color: #ffcf70; } .pill.auto .d { background: var(--amber); }
+
+  .sect { font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--dim); font-weight: 700; margin: 30px 0 14px;
+    display: flex; justify-content: space-between; align-items: center; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+
+  .card { background: linear-gradient(160deg, var(--card), var(--card2));
+    border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
+  a.card { display: block; transition: all .18s; cursor: pointer; }
+  a.card:hover { border-color: var(--border2); transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(0,0,0,.35); }
+
+  .room-top { display: flex; align-items: center; gap: 12px; }
+  .room-ico { width: 44px; height: 44px; border-radius: 12px; display: flex;
+    align-items: center; justify-content: center; font-size: 22px;
+    background: rgba(79,140,255,.12); border: 1px solid rgba(79,140,255,.25); }
+  .room-ico.red { background: rgba(255,77,94,.12); border-color: rgba(255,77,94,.3); }
+  .room-ico.green { background: rgba(47,212,122,.1); border-color: rgba(47,212,122,.28); }
+  .room-ico.violet { background: rgba(176,123,255,.12); border-color: rgba(176,123,255,.3); }
+  .room-name { font-size: 16.5px; font-weight: 700; }
+  .room-sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .arrow { margin-left: auto; color: var(--dim); font-size: 18px; }
+
+  .stats { display: flex; gap: 26px; margin: 14px 0 4px; }
+  .stat .n { font-size: 24px; font-weight: 800; letter-spacing: -.01em; }
+  .stat .l { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-top: 2px; }
+
+  .muted { color: var(--muted); } .dim { color: var(--dim); }
+  .small { font-size: 12.5px; }
+
+  .list { border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+    background: var(--card2); }
+  .row { padding: 13px 18px; border-top: 1px solid var(--border); }
+  .row:first-child { border-top: none; }
+  .row-h { display: flex; gap: 10px; align-items: center; font-size: 13px; flex-wrap: wrap; }
+  .t { color: var(--dim); font-variant-numeric: tabular-nums; font-size: 12px; }
+  .mono { white-space: pre-wrap; font-family: Consolas, ui-monospace, monospace;
+    font-size: 12.5px; color: #b9c4d6; background: #0a0e17; border: 1px solid var(--border);
+    border-radius: 9px; padding: 10px 13px; margin-top: 9px; overflow-x: auto; }
+  .tag { font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 6px;
+    letter-spacing: .05em; }
+  .tag.warn { color: var(--amber); border: 1px solid rgba(255,178,36,.45); }
+  .tag.mode { color: var(--dim); border: 1px solid var(--border); }
+  .empty { padding: 28px; text-align: center; color: var(--dim); }
+
+  .note { border: 1px solid rgba(79,140,255,.35); background: rgba(79,140,255,.07);
+    border-radius: 11px; padding: 11px 15px; font-size: 13px; margin-top: 12px; }
+  .slot { border: 1px dashed var(--border2); border-radius: 10px; padding: 9px 13px;
+    font-size: 13px; margin-top: 12px; }
+  .slot b { color: #9cc0ff; }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="logo">Panel<span class="dot">.</span><small>dowodzenia</small></div>
+    <nav class="nav">
+      <a href="/" class="{{ 'on' if active == 'dash' else '' }}"><span class="em">&#9670;</span> Centrum</a>
+      <div class="nav-label">Pokoje</div>
+      {% for rid, room in st.rooms.items() %}
+        {% if rid in ['youtube'] %}
+          <a href="/room/{{ rid }}" class="{{ 'on' if active == rid else '' }}">
+            <span class="em">{{ room.emoji }}</span> {{ room.name }}</a>
+        {% else %}
+          <a href="/room/{{ rid }}" class="{{ 'on' if active == rid else '' }}">
+            <span class="em">{{ room.emoji }}</span> {{ room.name }} <span class="soon">wkr&#243;tce</span></a>
+        {% endif %}
+      {% endfor %}
+    </nav>
+    <div class="side-foot">Prywatny &middot; <b>127.0.0.1</b><br>tylko ten komputer</div>
+  </aside>
+
+  <main>
+    <header class="top">
+      <div>
+        <h1>{% block heading %}Centrum{% endblock %}</h1>
+        <div class="crumb">{% block crumb %}Przegl&#261;d wszystkich pokoi{% endblock %}</div>
+      </div>
+      <div class="controls">
+        {% if st.running %}
+          <span class="pill ok"><span class="d"></span>Aktywny</span>
+        {% else %}
+          <span class="pill stop"><span class="d"></span>ZATRZYMANY</span>
+        {% endif %}
+
+        {% if st.get('auto') %}
+          <form class="inline" action="/auto" method="post"><button class="pill auto" title="Klik = wylacz automat"><span class="d"></span>Automat</button></form>
+        {% else %}
+          <form class="inline" action="/auto" method="post"><button class="pill" title="Klik = wlacz automat"><span class="d" style="background:var(--dim)"></span>Automat</button></form>
+        {% endif %}
+
+        <div class="seg">
+          <form class="inline" action="/mode" method="post">
+            <input type="hidden" name="mode" value="setup">
+            <button type="submit" class="{{ 'on-setup' if st.mode != 'live' else '' }}">SET-UP</button>
+          </form>
+          <form class="inline" action="/mode" method="post">
+            <input type="hidden" name="mode" value="live">
+            <button type="submit" class="{{ 'on-live' if st.mode == 'live' else '' }}">LIVE</button>
+          </form>
+        </div>
+
+        <form class="inline" action="/stop-generation" method="post">
+          <button class="btn danger" title="Przerwij wszystko co sie generuje (ComfyUI, casting, fabryki)">&#9209; STOP generowania</button>
+        </form>
+
+        {% if st.running %}
+          <form class="inline" action="/stop" method="post"><button class="btn danger">&#9632; STOP panel</button></form>
+        {% else %}
+          <form class="inline" action="/resume" method="post"><button class="btn good">&#9654; Wzn&#243;w</button></form>
+        {% endif %}
+      </div>
+    </header>
+
+    {% block content %}{% endblock %}
+  </main>
+</div>
+<script>
+  setInterval(function () {
+    if (!document.querySelector(':focus')) location.reload();
+  }, 7000);
+</script>
+</body>
+</html>

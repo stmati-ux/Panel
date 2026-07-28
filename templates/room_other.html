@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ room.name }} — Panel dowodzenia{% endblock %}
+{% block heading %}{{ room.emoji }} Pok&#243;j: {{ room.name }}{% endblock %}
+{% block crumb %}{{ room.description }}{% endblock %}
+
+{% block content %}
+
+  <div class="card" style="max-width:640px;">
+    <div class="room-top">
+      <div class="room-ico {{ 'green' if room.id == 'dropshipping' else 'violet' }}">{{ room.emoji }}</div>
+      <div>
+        <div class="room-name">{{ room.name }}</div>
+        <div class="room-sub">pok&#243;j w budowie</div>
+      </div>
+    </div>
+    <div class="muted" style="margin-top:16px;line-height:1.7;">
+      {% if room.id == 'dropshipping' %}
+        Ten pok&#243;j dostanie: podgl&#261;d sklepu Shopify, research produkt&#243;w,
+        dodawanie produkt&#243;w z opisami, obs&#322;ug&#281; zam&#243;wie&#324; i raporty sprzeda&#380;y.
+      {% elif room.id == 'trading' %}
+        Plan pokoju (ustalony):<br>
+        <b>1.</b> Czytanie sygna&#322;&#243;w z Twojej grupy TG (Twoje konto, Telethon)<br>
+        <b>2.</b> Auto-analiza ka&#380;dego tokena: cena/momentum (Jupiter), p&#322;ynno&#347;&#263;,
+        wiek, holderzy, rug-check (DexScreener)<br>
+        <b>3.</b> Karta tokena na Twojego bota TG: dane + ocena ryzyka<br>
+        <b>4.</b> Wirtualny portfel &mdash; pomiar skuteczno&#347;ci sygna&#322;&#243;w grupy
+        (paper trading, zero prawdziwych transakcji)<br>
+        <b>5.</b> Dopiero gdy statystyki poka&#380;&#261; sens: kupno przez Jupiter
+        z Twoim potwierdzeniem i limitem kwoty
+      {% else %}
+        Ten pok&#243;j dostanie: sp&#243;jn&#261; wirtualn&#261; posta&#263; (ta sama twarz wsz&#281;dzie),
+        generowanie sesji zdj&#281;ciowych w ComfyUI i publikacj&#281; tre&#347;ci.
+      {% endif %}
+    </div>
+    <div class="note" style="margin-top:18px;">
+      Kolejno&#347;&#263; budowy ustalasz Ty &mdash; najpierw ko&#324;czymy pok&#243;j YouTube
+      (generacja nowych film&#243;w), potem bierzemy nast&#281;pny.
+    </div>
+  </div>
+
+{% endblock %}

@@ -1,0 +1,17 @@
+<div class="list">
+  {% if not reports %}
+    <div class="empty">Brak raport&#243;w.</div>
+  {% endif %}
+  {% for r in reports %}
+  <div class="row">
+    <div class="row-h">
+      <span class="t">{{ r.time }}</span>
+      <b>Raport &mdash; pok&#243;j: {{ r.room_label }}{% if r.channel_label %} &middot; kana&#322;: {{ r.channel_label }}{% endif %}</b>
+      {% if r.needs_action %}<span class="tag warn">WYMAGA CIEBIE</span>{% endif %}
+      <span class="tag mode">{{ 'LIVE' if r.mode == 'live' else 'SET-UP' }}</span>
+    </div>
+    <div class="small muted" style="margin-top:6px;font-weight:600;">{{ r.title }}</div>
+    <div class="mono">{{ r.summary }}</div>
+  </div>
+  {% endfor %}
+</div>

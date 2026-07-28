@@ -1,0 +1,28 @@
+# ==== SEKRETY - NIGDY NIE PUBLIKOWAC ====
+secrets/
+*.session
+*token*.json
+client_secret*.json
+
+# ==== DANE PRYWATNE ====
+# Wlasne dane operacyjne, logi tradingowe, raporty - nie naleza do portfolio
+data/
+*.log
+
+# ==== DOKUMENTY WEWNETRZNE ====
+# Plany biznesowe, strategie - prywatne, nie do publikacji
+docs/
+_sesje_backup/
+
+# ==== PYTHON ====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ==== SYSTEM ====
+.DS_Store
+Thumbs.db
+desktop.ini

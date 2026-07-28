@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}YouTube — Panel dowodzenia{% endblock %}
+{% block heading %}&#127916; Pok&#243;j: YouTube{% endblock %}
+{% block crumb %}Kana&#322;y, harmonogram i publikacja short&#243;w{% endblock %}
+
+{% block content %}
+
+  <div class="sect">
+    <span>Kana&#322;y</span>
+    <form class="inline" action="/youtube/refresh" method="post">
+      <button class="btn sm">&#8635; Od&#347;wie&#380; dane z YouTube</button>
+    </form>
+  </div>
+
+  <div class="grid">
+    {% if not yt or not yt.get('channels') %}
+      <div class="card" style="grid-column:1/-1;">
+        <div class="muted">
+          {% if yt and yt.get('error') %}B&#322;&#261;d: {{ yt.error }}
+          {% else %}Kliknij &#8222;Od&#347;wie&#380; dane z YouTube&#8221;, aby wczyta&#263; kana&#322;y.{% endif %}
+        </div>
+      </div>
+    {% else %}
+      {% for ch in yt.channels %}
+      <div class="card">
+        <div class="room-top">
+          <div class="room-ico red">&#128250;</div>
+          <div>
+            <div class="room-name">{{ ch.title }}</div>
+            <div class="room-sub">konto: {{ ch.account }}</div>
+          </div>
+        </div>
+        {% if ch.get('error') %}
+          <div class="small muted" style="margin-top:12px;">B&#322;&#261;d: {{ ch.error }}</div>
+        {% else %}
+        <div class="stats">
+          <div class="stat"><div class="n">{{ ch.subs }}</div><div class="l">suby</div></div>
+          <div class="stat"><div class="n">{{ ch.views }}</div><div class="l">wy&#347;wietlenia</div></div>
+          <div class="stat"><div class="n">{{ ch.videos }}</div><div class="l">filmy</div></div>
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+  {% if yt and yt.get('refreshed') %}
+    <div class="small dim" style="margin-top:10px;">Dane z: {{ yt.refreshed }}</div>
+  {% endif %}
+
+  {% if yt and yt.get('schedule') %}
+  <div class="sect"><span>Harmonogram publikacji</span></div>
+  <div class="grid">
+    {% for acc, sc in yt.schedule.items() %}
+    <div class="card">
+      <div class="room-top">
+        <div class="room-ico">&#128197;</div>
+        <div>
+          <div class="room-name">{{ 'After3AMFiles' if acc == 'after3am' else ('DinoVault' if acc == 'dinovault' else acc) }}</div>
+          <div class="room-sub">zaplanowane: {{ sc['items']|length }} film&#243;w</div>
+        </div>
+      </div>
+      {% if sc.get('error') %}
+        <div class="small muted" style="margin-top:12px;">B&#322;&#261;d: {{ sc.error }}</div>
+      {% else %}
+        <div style="max-height:170px;overflow-y:auto;font-size:12.5px;line-height:1.8;margin-top:12px;">
+          {% for it in sc['items'] %}
+            <div><span class="t">{{ it.when }}</span> &nbsp;{{ it.title[:40] }}</div>
+          {% endfor %}
+          {% if not sc['items'] %}<div class="dim">(nic nie zaplanowane)</div>{% endif %}
+        </div>
+        {% if sc.get('next_slot') %}
+          <div class="slot">Nast&#281;pny wolny slot: <b>{{ sc.next_slot }}</b></div>
+        {% endif %}
+        <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <form class="inline" action="/publish/{{ acc }}" method="post">
+            <button class="btn primary sm" {% if not st.running %}disabled{% endif %}>
+              &#9654; Zaplanuj nast&#281;pny film
+            </button>
+          </form>
+          <form class="inline" action="/generate/{{ acc }}" method="post">
+            <button class="btn good sm" {% if not st.running or (gen and gen[acc]['running']) %}disabled{% endif %}>
+              {% if gen and gen[acc]['running'] %}&#9203; Fabryka pracuje...{% else %}&#127909; Generuj nowe filmy{% endif %}
+            </button>
+          </form>
+          {% if gen %}
+            <span class="small dim">paczka: {{ gen[acc]['queue'] }} do zrobienia</span>
+          {% endif %}
+          <span class="small {{ 'muted' if st.mode == 'live' else 'dim' }}">
+            {% if st.mode == 'live' %}LIVE: wy&#347;le naprawd&#281;{% else %}SET-UP: tylko poka&#380;e plan{% endif %}
+          </span>
+        </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="sect"><span>Raporty z tego pokoju</span></div>
+  {% include "_reports.html" %}
+
+{% endblock %}

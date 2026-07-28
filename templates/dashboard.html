@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Centrum — Panel dowodzenia{% endblock %}
+{% block heading %}Centrum{% endblock %}
+{% block crumb %}Przegl&#261;d wszystkich pokoi &middot; kliknij pok&#243;j, by wej&#347;&#263; do &#347;rodka{% endblock %}
+
+{% block content %}
+
+  <div class="sect"><span>Pokoje</span></div>
+  <div class="grid">
+
+    <a class="card" href="/room/youtube">
+      <div class="room-top">
+        <div class="room-ico red">&#127916;</div>
+        <div>
+          <div class="room-name">YouTube</div>
+          <div class="room-sub">produkcja i publikacja short&#243;w</div>
+        </div>
+        <span class="arrow">&#8250;</span>
+      </div>
+      {% if yt and yt.get('channels') %}
+      <div class="stats">
+        <div class="stat"><div class="n">{{ yt.channels|length }}</div><div class="l">kana&#322;y</div></div>
+        {% set total_sched = [] %}
+        {% for acc, sc in (yt.get('schedule') or {}).items() %}{% if total_sched.append(sc['items']|length) %}{% endif %}{% endfor %}
+        <div class="stat"><div class="n">{{ total_sched|sum }}</div><div class="l">zaplanowane</div></div>
+        <div class="stat"><div class="n">{{ '&#10003;'|safe if st.get('auto') else '&mdash;'|safe }}</div><div class="l">automat</div></div>
+      </div>
+      {% else %}
+      <div class="small dim" style="margin-top:14px;">Wejd&#378; i kliknij &#8222;Od&#347;wie&#380;&#8221;, by wczyta&#263; kana&#322;y.</div>
+      {% endif %}
+    </a>
+
+    <a class="card" href="/room/dropshipping">
+      <div class="room-top">
+        <div class="room-ico green">&#128722;</div>
+        <div>
+          <div class="room-name">Dropshipping</div>
+          <div class="room-sub">sklep, produkty, zam&#243;wienia</div>
+        </div>
+        <span class="arrow">&#8250;</span>
+      </div>
+      <div class="small dim" style="margin-top:14px;">Wkr&#243;tce &mdash; pok&#243;j w budowie.</div>
+    </a>
+
+    <a class="card" href="/room/trading">
+      <div class="room-top">
+        <div class="room-ico">&#128200;</div>
+        <div>
+          <div class="room-name">Trading</div>
+          <div class="room-sub">sygna&#322;y z grupy TG + Jupiter</div>
+        </div>
+        <span class="arrow">&#8250;</span>
+      </div>
+      <div class="small dim" style="margin-top:14px;">Zaprojektowany &mdash; start od wirtualnego portfela.</div>
+    </a>
+
+  </div>
+
+  <div class="sect">
+    <span>Ostatnie raporty ze wszystkich pokoi</span>
+    {% if reports %}
+    <form class="inline" action="/reports/clear" method="post">
+      <button class="btn ghost sm">Wyczy&#347;&#263; wszystkie</button>
+    </form>
+    {% endif %}
+  </div>
+  {% include "_reports.html" %}
+
+  <div class="note" style="margin-top:22px;">
+    <b>SET-UP</b> = ustawiasz i testujesz, nic nie wychodzi na zewn&#261;trz.
+    <b>LIVE</b> = wszystko dzia&#322;a naprawd&#281; (publikacje wychodz&#261; na YouTube).
+    <b>Automat</b> = panel sam, raz dziennie, dok&#322;ada po jednym filmie na kana&#322;.
+  </div>
+
+  <div class="sect"><span>Telegram (raporty + zdalne komendy)</span></div>
+  <div class="card" style="max-width:640px;">
+    <form action="/telegram/setup" method="post" style="display:flex;gap:10px;flex-wrap:wrap;">
+      <input name="token" placeholder="token od @BotFather (123456:AAG...)"
+        style="flex:1;min-width:260px;background:#0a0e17;border:1px solid var(--border2);border-radius:8px;color:var(--text);padding:9px 12px;font:inherit;">
+      <button class="btn primary sm">Zapisz token</button>
+    </form>
+    <div class="small dim" style="margin-top:10px;">
+      Telegram &rarr; @BotFather &rarr; /newbot &rarr; wklej token tutaj &rarr; potem napisz do bota
+      <b>/start &lt;kod&gt;</b> (kod pojawi si&#281; w raportach).
+    </div>
+  </div>
+
+{% endblock %}
