@@ -91,26 +91,19 @@ Obsługa limitów zapytań, timeoutów i odpowiedzi częściowych.
 
 ---
 
-## Uruchomienie
+## Charakter projektu
 
-```bash
-pip install -r requirements.txt
-python app.py
-```
+**Repozytorium udostępniam jako materiał portfolio, do wglądu w kod i architekturę.**
+Nie jest przeznaczone do uruchamiania ani wdrażania u siebie i nie zawiera instrukcji
+instalacyjnej.
 
-Panel: **http://127.0.0.1:5000**
+Panel jest zrośnięty z konkretnymi kontami: własnym klientem OAuth z Google Cloud,
+własnym botem Telegrama, konkretnymi kanałami YouTube i kontem giełdowym. Bez nich
+pozostaje pustym szkieletem, który nie ma się z czym połączyć.
 
-Konfiguracja integracji trafia do katalogu `secrets/` (nieśledzonego przez git):
-
-| plik | zawartość |
-|---|---|
-| `client_secret.json` | OAuth client z Google Cloud (Desktop app) |
-| `token_<kanal>.json` | tworzony automatycznie po autoryzacji |
-| `telegram.json` | token bota z @BotFather |
-| `telegram_user.json` | `api_id` / `api_hash` do czytnika grup |
-
-Pomocnicze: `connect_youtube.py` i `connect_trading.py` przeprowadzają przez
-autoryzację krok po kroku.
+Konfiguracja integracji żyje w katalogu `secrets/`, który jest wykluczony z repozytorium
+i nigdy nie trafił do historii commitów. W kodzie nie ma żadnych kluczy, tokenów ani
+adresów serwerów. Serwer nasłuchuje wyłącznie na `127.0.0.1`.
 
 ---
 
